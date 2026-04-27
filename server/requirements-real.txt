@@ -1,0 +1,5 @@
+# Real-robot env (Python 3.12) — for demo_pico_vr_real.py / record_home_pose.py
+numpy
+scipy
+pygame
+lerobot[feetech]>=0.4.5

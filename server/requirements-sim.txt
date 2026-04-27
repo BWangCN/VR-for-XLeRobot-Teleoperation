@@ -1,0 +1,6 @@
+# Simulation env (Python 3.11) — for demo_pico_vr_sim.py / demo_pico_vr_fullbody_sim.py
+numpy
+scipy
+pygame
+tyro
+mani_skill        # pulls in sapien, gymnasium

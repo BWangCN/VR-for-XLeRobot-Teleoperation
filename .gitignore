@@ -1,0 +1,88 @@
+# ─── Python ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.Python
+build/
+dist/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ─── Virtual envs / IDE ──────────────────────────────────────────────
+.venv/
+venv/
+env/
+.env
+.envrc
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Unity (UnityProject/) ───────────────────────────────────────────
+UnityProject/[Ll]ibrary/
+UnityProject/[Tt]emp/
+UnityProject/[Oo]bj/
+UnityProject/[Bb]uild/
+UnityProject/[Bb]uilds/
+UnityProject/[Ll]ogs/
+UnityProject/[Uu]ser[Ss]ettings/
+UnityProject/[Mm]emoryCaptures/
+UnityProject/[Rr]ecordings/
+UnityProject/[Aa]ssets/AssetStoreTools*
+UnityProject/[Aa]ssets/Plugins/Editor/JetBrains*
+UnityProject/.vs/
+UnityProject/.vsconfig
+
+# Unity meta files for ignored folders
+UnityProject/[Ll]ibrary.meta
+UnityProject/[Tt]emp.meta
+UnityProject/[Oo]bj.meta
+UnityProject/[Bb]uild.meta
+UnityProject/[Bb]uilds.meta
+UnityProject/[Ll]ogs.meta
+UnityProject/[Uu]ser[Ss]ettings.meta
+
+# Unity build artefacts
+*.apk
+*.aab
+*.unitypackage
+*.app
+sysinfo.txt
+crashlytics-build.properties
+
+# Generated C# project files (Rider/VS recreate them)
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ─── ManiSkill / SAPIEN runtime caches ───────────────────────────────
+*.log
+*.tmp
+.maniskill/
+sapien_*.log
+
+# ─── Calibration / user data ─────────────────────────────────────────
+# Keep home_pose.json (it's the default reference pose) but ignore backups
+home_pose.*.json
+home_pose_backup*.json
+*.calibration.bak

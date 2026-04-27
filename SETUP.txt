@@ -1,0 +1,111 @@
+==============================================================
+  XLeRobot PICO 4 Ultra VR Teleoperation - Setup Guide
+==============================================================
+
+ARCHITECTURE
+============
+
+  PICO 4 Ultra (Unity)         PC (Windows)
+  +----------------------+     +----------------------------+
+  | PicoXLeRobotStreamer |---->| pico_vr_bridge.py (TCP)    |
+  | - Controller pos/rot |TCP  | - Converts to ControlGoal  |
+  | - Trigger, grip      |9876 | - Feeds ManiSkill sim      |
+  | - Thumbstick         |     | demo_pico_vr_sim.py        |
+  | - Head pose          |     | - 3D viewer + pygame panel |
+  +----------------------+     +----------------------------+
+
+
+STEP 1: Unity Side (PICO)
+=========================
+
+1. Open your existing PICO project:
+   C:\Users\Wayne\Unity\My project
+
+2. Copy the streamer script into your project:
+   FROM: C:\Users\Wayne\Desktop\XLerobot\pico_vr\unity\PicoXLeRobotStreamer.cs
+   TO:   C:\Users\Wayne\Unity\My project\Assets\Scripts\PicoXLeRobotStreamer.cs
+
+3. In Unity:
+   - Create an empty GameObject (or use an existing one)
+   - Attach the PicoXLeRobotStreamer component
+   - Set "Pc Ip Address" to your PC's local IP
+     (Find it with: ipconfig in cmd, look for IPv4 Address)
+   - Port should be 9876 (default)
+
+4. Build and deploy to PICO 4 Ultra
+
+
+STEP 2: PC Side (Python)
+=========================
+
+1. Run the simulation:
+   - Double-click: run_pico_vr_sim.bat
+   - Or manually:
+     conda activate xlerobot_sim
+     cd C:\Users\Wayne\Desktop\XLerobot\pico_vr\server
+     python demo_pico_vr_sim.py
+
+2. The console will show your PC's IP and port
+   Make sure this matches the Unity script setting
+
+
+STEP 3: Connect
+================
+
+1. Start the Python simulation on PC (Step 2)
+2. Launch the Unity app on PICO 4 Ultra
+3. PICO will auto-connect to the PC
+4. Move controllers to control the robot arms
+
+
+CONTROLS
+========
+
+Left Controller:
+  - Position    -> Arm 1 end-effector
+  - Trigger     -> Arm 1 gripper (pull = open)
+  - Thumbstick  -> Base movement (Y) + rotation (X)
+  - Wrist twist -> Arm 1 wrist roll
+
+Right Controller:
+  - Position    -> Arm 2 end-effector
+  - Trigger     -> Arm 2 gripper
+  - Wrist twist -> Arm 2 wrist roll
+
+Headset:
+  - Head yaw    -> Robot head pan
+  - Head pitch  -> Robot head tilt
+
+Keyboard (on PC):
+  X = Reset all positions
+  R = Recalibrate VR origins
+
+
+TROUBLESHOOTING
+===============
+
+- "Waiting for PICO..." stays:
+  -> Check PC firewall allows port 9876
+  -> Verify both devices on same WiFi network
+  -> Verify IP address in Unity script is correct
+
+- Robot moves erratically:
+  -> Press R to recalibrate VR origins
+  -> Press X to reset all positions
+  -> Adjust vr_scale parameter
+
+- PICO disconnects:
+  -> Auto-reconnect is enabled by default
+  -> Check WiFi stability
+
+
+FILES
+=====
+
+pico_vr/
+  server/
+    pico_vr_bridge.py       - TCP server, converts PICO data to ControlGoal
+    demo_pico_vr_sim.py     - ManiSkill simulation with PICO VR input
+  unity/
+    PicoXLeRobotStreamer.cs - Unity script for PICO 4 Ultra
+  SETUP.txt                - This file
