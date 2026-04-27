@@ -28,9 +28,11 @@ The transport is newline-delimited JSON over TCP at 60 Hz. The bridge exposes th
 
 | Demo | Script | Mode | Description |
 |---|---|---|---|
-| Basic sim | `demo_pico_vr_sim.py` | ManiSkill | Dual-arm IK from controller deltas, gripper from triggers, base from left thumbstick. First-person head-camera toggle. |
-| Full-body sim | `demo_pico_vr_fullbody_sim.py` | ManiSkill | T-pose calibration, body-frame arm tracking, headset acts as pelvis (drives base translation), head rotation drives camera with low-pass-filtered body yaw. |
-| Real robot | `demo_pico_vr_real.py` | Feetech bus | Drives physical arms via LeRobot `FeetechMotorsBus`. Safety-clamped P-control, recordable home pose, automatic safe-return on quit. |
+| Basic sim | `server/demo_pico_vr_sim.py` | ManiSkill | Dual-arm IK from controller deltas, gripper from triggers, base from left thumbstick. First-person head-camera toggle. |
+| Full-body sim | `server/demo_pico_vr_fullbody_sim.py` | ManiSkill | T-pose calibration, body-frame arm tracking, headset acts as pelvis (drives base translation), head rotation drives camera with low-pass-filtered body yaw. |
+| Real robot | `server/demo_pico_vr_real.py` | Feetech bus | Drives physical arms via LeRobot `FeetechMotorsBus`. Safety-clamped P-control, recordable home pose, automatic safe-return on quit. |
+| Keyboard (joint) | `keyboard/teleop_keyboard.py` | Feetech bus | Per-joint stepping with arrow keys; useful for diagnostics and manual positioning when no VR is available. |
+| Keyboard (EE) | `keyboard/teleop_official.py` | Feetech bus | End-effector keyboard control (WASD / IJKL clusters) using SO-101 analytical IK. **Auto-returns to a recorded safe position on quit.** |
 
 ## Requirements
 
@@ -182,6 +184,60 @@ python record_home_pose.py --port1 COM4 --port2 COM3
 # Saves home_pose.json next to the script; auto-loaded by the teleop demo.
 ```
 
+## Keyboard Teleoperation (real robot, no VR required)
+
+Two keyboard fallbacks live in `keyboard/`. Both drive the physical XLeRobot via LeRobot's standard `XLerobot` class — **the LeRobot calibration must already be done** (`~/.cache/huggingface/lerobot/calibration/robots/xlerobot/None.json`).
+
+### `teleop_keyboard.py` — per-joint stepping
+
+```bash
+conda activate xlerobot
+cd pico_vr/keyboard
+python teleop_keyboard.py
+```
+
+| Key | Action |
+|---|---|
+| `1`–`6` | Select left-arm joint (pan / lift / elbow / wrist-flex / wrist-roll / gripper) |
+| `Shift` + `1`–`6` | Select right-arm joint |
+| `↑` / `↓` | Move selected joint |
+| `+` / `-` | Increase / decrease step size |
+| `R` | Reset targets to current actual positions |
+| `Q` / `Esc` | Quit |
+
+Best for sanity-checking individual motors or unsticking an arm before VR.
+
+### `teleop_official.py` — end-effector keyboard control with safe-return
+
+```bash
+conda activate xlerobot
+cd pico_vr/keyboard
+python teleop_official.py
+```
+
+WASD-style EE control via SO-101 analytical IK. See the docstring at the top of the file for the full keymap (Q/E pan, W/S forward-back, A/D up-down, Z/X pitch, R/F wrist-roll, T/G gripper for the left arm; U/O, I/K, J/L, N/M, P/`;`, `[`/`]` for the right arm; `C` / `B` reset each arm; `Esc` or `` ` `` to quit).
+
+> **IMPORTANT — safe-position must be calibrated first.**
+> On quit (`Esc` or `` ` ``), `teleop_official.py` calls `return_to_safe_position(robot)` from `keyboard/safe_position.py`. This **smoothly drives both arms** to the joint angles stored in `SAFE_POSITION` (in `safe_position.py`) over ~3 s with a cosine ease, then disables torque.
+>
+> The `SAFE_POSITION` shipped in this repo reflects **the author's robot** and is almost certainly wrong for yours — running it without re-calibration may swing the arms into the table, the base, or themselves.
+>
+> **Always run the recorder first on a new robot:**
+>
+> ```bash
+> conda activate xlerobot
+> cd pico_vr/keyboard
+> python record_safe_position.py
+> ```
+>
+> Workflow:
+> 1. Motors go limp — manually move both arms to a pose that is mechanically safe to fall back into (low, arms tucked, no collisions with the body or table).
+> 2. Press `Enter` to record.
+> 3. Motors lock to the recorded angles so you can verify it stays put.
+> 4. Press `Enter` to confirm (overwrites `safe_position.py` with the new `SAFE_POSITION` dict) or `r` to redo.
+>
+> Re-run after any mechanical change (different end-effector, mounted on a different table, mirror-flipped arm, etc.). The same file is also used by `teleop_pico_vr.py` if you want safe-return on the VR demo.
+
 ## Calibration Workflow
 
 All three demos share the same state machine:
@@ -213,8 +269,15 @@ pico_vr/
     demo_pico_vr_sim.py           ManiSkill basic teleop demo
     demo_pico_vr_fullbody_sim.py  ManiSkill full-body teleop demo
     demo_pico_vr_real.py          Real-robot teleop (LeRobot Feetech bus)
-    record_home_pose.py           Hand-guided home-pose recorder
-    home_pose.json                Saved real-robot home pose
+    record_home_pose.py           Hand-guided home-pose recorder (VR)
+    home_pose.json                Saved real-robot home pose (VR)
+    requirements-sim.txt          pip deps for simulation env
+    requirements-real.txt         pip deps for real-robot env
+  keyboard/
+    teleop_keyboard.py            Per-joint keyboard teleop (real robot)
+    teleop_official.py            EE keyboard teleop with auto safe-return
+    record_safe_position.py       Hand-guided safe-pose recorder (REQUIRED first run)
+    safe_position.py              Saved SAFE_POSITION + return_to_safe_position()
   unity/
     PicoXLeRobotStreamer.cs       Drop-in Unity client script
   UnityProject/                   Minimal Unity scene skeleton (for reference)
